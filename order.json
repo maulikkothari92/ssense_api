@@ -1,0 +1,47 @@
+{
+  "retailer_credentials": {
+      "email": "maulikkothari92@gmail.com",
+      "password": "Nidnift7"
+  },
+  "products": [
+    {
+      "product_id": "104194",
+      "quantity": 2,
+      "category": "men",
+      "size": "M"
+    },
+    {
+      "product_id": "106133",
+      "quantity": 1,
+      "category": "men"
+    }   
+  ],
+  "shipping_method": "cheapest",
+  "max_price": "1500",
+  "shipping_address": {
+    "first_name": "Maulik",
+    "last_name": "Kothari",
+    "address": "2011 LINCOLN ST, APT C",
+    "zip_code": "94709",
+    "city": "Berkeley",
+    "state": "CA",
+    "country": "US",
+    "phone": "8123251316"
+  },
+  "payment_method": {
+      "number": "4060320339460843",
+      "name_on_card": "Maulik Kothari",
+      "expiration_month": "8",
+      "expiration_year": "2016",
+      "security_code": "490"
+  },
+  "billing_address": {
+    "first_name": "Maulik",
+    "last_name": "Kothari",
+    "address": "2675 E. 7th Street, Apt E",
+    "zip_code": "47408",
+    "city": "Bloomington",
+    "state": "IN",
+    "country": "US"
+  }
+}
