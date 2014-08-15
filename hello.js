@@ -357,6 +357,11 @@ start_spooky = function (order, callback){
                 });
                 console.log(price_on_page);
                 console.log(max_price);
+                if (max_price <= price_on_page) {
+                    this.evaluate(function() {
+                        $('#confirm').click();
+                    })
+                }
             }]);
 
             spooky.run();
