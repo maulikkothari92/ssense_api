@@ -296,6 +296,7 @@ start_spooky = function (order, callback){
                 //console.log($('select[name="shipping_state"]').val());
                 console.log("Selecting shipping method");
                 $('select[name="shipping_method"]').val($('select[name="shipping_method"] option:eq(1)').val());
+                $('select[name="shipping_method"]').trigger('change'); 
             });
 
             spooky.thenEvaluate(function( credit_card_name, credit_card_number, credit_card_month, credit_card_year, credit_card_cvv){
@@ -345,10 +346,6 @@ start_spooky = function (order, callback){
                 this.wait(2000);
             });
 
-            spooky.then(function(){
-                this.capture('captures/[Checkout] After filling the details.png');
-            });
-
             spooky.then([{
                   max_price: max_price
                 },function(){
@@ -357,7 +354,18 @@ start_spooky = function (order, callback){
                 });
                 console.log(price_on_page);
                 console.log(max_price);
+                if(max_price <= price_on_page)
+                {
+                    this.evaluate(function() {      
+                        $('#confirm').click();
+                        console.log('Clicking the confirm button');
+                    });
+                }
             }]);
+
+            spooky.then(function(){
+                this.capture('captures/[Checkout] After filling the details.png');
+            });
 
             spooky.run();
         });
