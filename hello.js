@@ -1,5 +1,5 @@
 
-start_spooky = function (order){
+start_spooky = function (order, callback){
     try {
         var Spooky = require('spooky');
     } catch (e) {
@@ -28,20 +28,8 @@ start_spooky = function (order){
             }
 
             spooky.start('http://en.wikipedia.org/wiki/Shah_rukh_khan');
-            spooky.then(function () {
-                this.emit('hello', 'Hello, from ' + this.evaluate(function () {
-                    return document.title;
-                }));
-            });
-
+            
             var CHECKOUT_URL = 'https://www.ssense.com/checkout?isAjax=true';
-            var errors = {
-                'internal_error': 'The retailer you requested is experiencing outages. Please try again or contact support@zinc.io if this error persists.',
-                'invalid_request': 'Validation failed on the request.',
-                'invalid_quantity' : "The quantity for one of the products does not match the one available on the retailer store." ,
-                'invalid_size' : "The size for one of the products does not match the one available on the retailer store.",
-                'invalid_product' : "One of the products does not match the one available on the retailer store."
-            }
               
             var email = order["retailer_credentials"]["email"];
             var products = order["products"];
@@ -107,8 +95,13 @@ start_spooky = function (order){
                             return size_on_page;
                         }, { size: size});
 
-                        this.emit('hello', "New Size: " +new_size); 
-                        console.log('hello', "New Size: " +new_size);
+                        if(new_size === null)
+                        {
+                            this.emit('error', 'invalid_size');
+                        }
+                        
+                        // this.emit('hello', "New Size: " +new_size); 
+                        // console.log('hello', "New Size: " +new_size);
 
                         this.evaluate(function(new_size){   
                           jQuery('select[id="size"]').val(new_size);     
@@ -181,12 +174,6 @@ start_spooky = function (order){
             spooky.then(function(){
                 this.waitForSelector('input[type = email]');
             });
-
-            // spooky.then([{ email: email,
-            //     password: password }, function(){
-            //     console.log(email);
-            //     console.log(password);
-            // }]);
 
             spooky.thenEvaluate(function(email, password){   
                     $('input[type = email]')[0].value = email;
@@ -322,30 +309,15 @@ start_spooky = function (order){
                 console.log(max_price);
             }]);
 
-
-        
             spooky.run();
         });
-
-    spooky.on('error', function (e, stack) {
-        console.error(e);
-
-        if (stack) {
-            console.log(stack);
-        }
-    });
-
-
-    spooky.on('page.error', function(message, trace) {
-        this.echo("[REMOTE ERROR]: " + message);
-    });
 
 
     // Uncomment this block to see all of the things Casper has to say.
     // There are a lot.
     // He has opinions.
     spooky.on('console', function (line) {
-         console.log(line);
+        console.log(line);
     });
 
     spooky.on('remote.message', function(message) {
@@ -358,19 +330,52 @@ start_spooky = function (order){
         console.log(greeting);
     });
 
-    spooky.on('completed', function(response){
+    spooky.on('respond_to_callback', function(response){
         callback(response)
     });
 
-    spooky.on('completed_with_error', function(error_response){
-        callback(error_response)
-    });
+    spooky.on('error', function(code, data){
+        var errors = {
+            'internal_error': 'The retailer you requested is experiencing outages. Please try again or contact support@zinc.io if this error persists.',
+            'invalid_request': 'Validation failed on the request.',
+            'invalid_quantity' : "The quantity for one of the products does not match the one available on the retailer store." ,
+            'invalid_size' : "The size for one of the products does not match the one available on the retailer store.",
+            'invalid_product' : "One of the products does not match the one available on the retailer store."
+        }
+        var response = errors[code];
+
+        if (typeof data === 'undefined')
+        {
+            response = {
+                'success': 'false',
+                'code': code,
+                'message': errors[code],
+            };
+        }
+        else 
+        {  
+            response = {
+                'success': 'false',
+                'code': code,
+                'message': errors[code],
+                'data': data
+            };
+        }
+        console.log('[Error Response]', JSON.stringify(response));
+        spooky.emit('respond_to_callback', response);
+        spooky.then(function() {
+            this.exit();
+        });
+
+        
+    })
 
     spooky.on('log', function (log) {
         if (log.space === 'remote') {
             console.log(log.message.replace(/ \- .*/, ''));
         }
     });
+
     return "Spooky Started"
 }    
 

@@ -13,7 +13,8 @@
     {
       "product_id": "106133",
       "quantity": 1,
-      "category": "men"
+      "category": "men",
+      "size": "M"
     }   
   ],
   "shipping_method": "cheapest",
