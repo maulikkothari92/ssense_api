@@ -354,19 +354,12 @@ start_spooky = function (order, callback){
                 });
                 console.log(price_on_page);
                 console.log(max_price);
-<<<<<<< HEAD
                 if(max_price <= price_on_page)
                 {
                     this.evaluate(function() {      
                         $('#confirm').click();
                         console.log('Clicking the confirm button');
                     });
-=======
-                if (max_price <= price_on_page) {
-                    this.evaluate(function() {
-                        $('#confirm').click();
-                    })
->>>>>>> e70d8f32970b48e1833016a485813a6cbac32dc0
                 }
             }]);
 
