@@ -346,6 +346,10 @@ start_spooky = function (order, callback){
                 this.wait(2000);
             });
 
+            spooky.then(function(){
+                this.capture('captures/[Checkout] After filling in the details.png');
+            });
+
             spooky.then([{
                   max_price: max_price
                 },function(){
@@ -364,7 +368,11 @@ start_spooky = function (order, callback){
             }]);
 
             spooky.then(function(){
-                this.capture('captures/[Checkout] After filling the details.png');
+                this.wait(2000);
+            });
+
+            spooky.then(function(){
+                this.capture('captures/[Checkout] After clicking the confirm button.png');
             });
 
             spooky.run();

@@ -1,49 +1,42 @@
 {
   "retailer_credentials": {
-      "email": "maulikkothari92@gmail.com",
-      "password": "Nidnift7"
+      "email": "doug@zinc.io",
+      "password": "eatfresh"
   },
   "products": [
     {
-      "product_id": "104194",
+      "product_id": "110709",
       "quantity": 1,
-      "category": "men",
-      "size": "M"
-    },
-    {
-      "product_id": "104194",
-      "quantity": 1,
-      "category": "men",
-      "size": "M"
-    }   
+      "category": "men"
+    }  
   ],
   "shipping_method": "cheapest",
   "max_price": "1500",
   "shipping_address": {
-    "first_name": "Maulik",
-    "last_name": "Kothari",
-    "address": "2011 LINCOLN ST, APT C",
-    "zip_code": "94709",
-    "city": "Berkeley",
+    "first_name": "Doug",
+    "last_name": "Feigelson",
+    "address": "1188 Mission Street Apt 1609",
+    "zip_code": "94103",
+    "city": "San Francisco",
     "state": "CA",
     "country": "US",
-    "phone": "8123251316"
+    "phone": "5136006163"
   },
   "payment_method": {
-      "number": "4060320339460843",
-      "name_on_card": "Maulik Kothari",
-      "expiration_month": "08",
+      "number": "4907980066258806",
+      "name_on_card": "Douglas Feigelson",
+      "expiration_month": "01",
       "expiration_year": "2016",
-      "security_code": "490"
+      "security_code": "217"
   },
   "billing_address": {
-    "first_name": "Maulik",
-    "last_name": "Kothari",
-    "address": "2675 E. 7th Street, Apt E",
-    "zip_code": "47408",
-    "city": "Bloomington",
-    "state": "IN",
+    "first_name": "Douglas",
+    "last_name": "Feigelson",
+    "address": "973 Ilima way",
+    "zip_code": "94306",
+    "city": "Palo Alto",
+    "state": "CA",
     "country": "US",
-    "phone": "8123251316"
+    "phone": "5136006163"
   }
 }
