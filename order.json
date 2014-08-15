@@ -6,12 +6,12 @@
   "products": [
     {
       "product_id": "104194",
-      "quantity": 2,
+      "quantity": 1,
       "category": "men",
       "size": "M"
     },
     {
-      "product_id": "106133",
+      "product_id": "104194",
       "quantity": 1,
       "category": "men",
       "size": "M"
@@ -32,7 +32,7 @@
   "payment_method": {
       "number": "4060320339460843",
       "name_on_card": "Maulik Kothari",
-      "expiration_month": "8",
+      "expiration_month": "08",
       "expiration_year": "2016",
       "security_code": "490"
   },
@@ -43,6 +43,7 @@
     "zip_code": "47408",
     "city": "Bloomington",
     "state": "IN",
-    "country": "US"
+    "country": "US",
+    "phone": "8123251316"
   }
 }

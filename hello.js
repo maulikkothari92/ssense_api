@@ -43,6 +43,21 @@ start_spooky = function (order, callback){
             var shipping_city = order["shipping_address"]["city"];
             var shipping_phone = order["shipping_address"]["phone"];
             var max_price = order["max_price"];
+            var billing_firstname = order["billing_address"]["first_name"];
+            var billing_lastname = order["billing_address"]["last_name"];
+            var billing_address = order["billing_address"]["address"];
+            var billing_country = order["billing_address"]["country"];
+            var billing_state = order["billing_address"]["state"];
+            var billing_city = order["billing_address"]["city"];
+            var billing_postalcode = order["billing_address"]["zip_code"];
+            var billing_phone = order["billing_address"]["phone"];
+            var credit_card_number = order["payment_method"]["number"];
+            var credit_card_name = order["payment_method"]["name_on_card"];
+            var credit_card_cvv = order["payment_method"]["security_code"];
+            var credit_card_month = order["payment_method"]["expiration_month"];
+            var credit_card_year = order["payment_method"]["expiration_year"];
+
+
 
             for(i=0; i<products.length;i++)
             {
@@ -73,7 +88,23 @@ start_spooky = function (order, callback){
             {
                 spooky.thenOpen('http://ssense.com/'+category+'/product/rs/rs/'+product_id);
 
+                spooky.then(function(){
+                    var page_not_found = this.evaluate(function(){
+                        if($('.content-404-inner').length)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }         
+                    });
 
+                    if (page_not_found)
+                    {
+                        this.emit('error', 'invalid_product');
+                    }
+                });
 
                 spooky.then(function(){
                     this.capture('captures/[Add to Cart] Before adding products.png');
@@ -91,7 +122,7 @@ start_spooky = function (order, callback){
                         }, function(){
                         var new_size = this.evaluate(function(size){
                             var size_on_page = $('option[value*='+ size +']').val();
-                            console.log('SIZE ON PAGE: ' + size_on_page)
+                            //console.log('SIZE ON PAGE: ' + size_on_page)
                             return size_on_page;
                         }, { size: size});
 
@@ -99,8 +130,7 @@ start_spooky = function (order, callback){
                         {
                             this.emit('error', 'invalid_size');
                         }
-                        
-                        // this.emit('hello', "New Size: " +new_size); 
+
                         // console.log('hello', "New Size: " +new_size);
 
                         this.evaluate(function(new_size){   
@@ -108,7 +138,6 @@ start_spooky = function (order, callback){
                         }, { new_size: new_size});     
                     }]);
                 }
-
 
                 spooky.then(function(){
                     this.evaluate(function() {      
@@ -269,27 +298,48 @@ start_spooky = function (order, callback){
                 $('select[name="shipping_method"]').val($('select[name="shipping_method"] option:eq(1)').val());
             });
 
-            spooky.thenEvaluate(function(){
+            spooky.thenEvaluate(function( credit_card_name, credit_card_number, credit_card_month, credit_card_year, credit_card_cvv){
                   // Inserting credit card information.
-                $('input[name="creditcardHolderName"]').val('Maulik Kothari');
-                $('input[name="creditcardNumber"]').val('4060320339460843');
-                $('select[name="creditCardMonth"]').val('08');
-                $('select[name="creditCardYear"]').val('2016');
-                $('input[name="creditcardCVV"]').val('490');
-            });
+                $('input[name="creditcardHolderName"]').val(credit_card_name);
+                $('input[name="creditcardNumber"]').val(credit_card_number);
+                $('select[name="creditCardMonth"]').val(credit_card_month);
+                $('select[name="creditCardYear"]').val(credit_card_year);
+                $('input[name="creditcardCVV"]').val(credit_card_cvv);
+            }, { credit_card_name: credit_card_name,
+                 credit_card_number: credit_card_number, 
+                 credit_card_month: credit_card_month, 
+                 credit_card_year: credit_card_year, 
+                 credit_card_cvv: credit_card_cvv});
 
-            spooky.thenEvaluate(function(){
+            spooky.thenEvaluate(function(billing_firstname, billing_lastname, billing_address){
                 // Inserting credit card information.
-                $('input[name="billing_firstname"]').val('Maulik');
-                $('input[name="billing_lastname"]').val('Kothari');
-                $('input[name="billing_address"]').val('2675 E. 7th Street, Apartment E');
+                $('input[name="billing_firstname"]').val(billing_firstname);
+                $('input[name="billing_lastname"]').val(billing_lastname);
+                $('input[name="billing_address"]').val(billing_address);
                 $('input[name="billing_postalcode"]').val('47408');
                 $('select[name="billing_country"]').val('US');
                 $('select[name="billing_country"]').trigger('change')
                 $('select[name="billing_state"]').val('IN');
                 $('input[name="billing_city"]').val('Bloomington');
                 $('input[name="billing_phone"]').val('8123251316');
-            });
+            }, {billing_firstname:billing_firstname, 
+                billing_lastname: billing_lastname, 
+                billing_address: billing_address});
+
+
+            spooky.thenEvaluate(function(billing_postalcode, billing_country, billing_state, billing_city, billing_phone){
+                // Inserting credit card information.
+                $('input[name="billing_postalcode"]').val(billing_postalcode);
+                $('select[name="billing_country"]').val(billing_country);
+                $('select[name="billing_country"]').trigger('change')
+                $('select[name="billing_state"]').val(billing_state);
+                $('input[name="billing_city"]').val(billing_city);
+                $('input[name="billing_phone"]').val(billing_phone);
+            }, {billing_postalcode: billing_postalcode, 
+                billing_country: billing_country, 
+                billing_state: billing_state,
+                billing_city: billing_city,
+                billing_phone: billing_phone});
 
             spooky.then(function(){
                 this.wait(2000);
@@ -321,10 +371,8 @@ start_spooky = function (order, callback){
     });
 
     spooky.on('remote.message', function(message) {
-        // this.echo('Message from Remote Server: ' + message);
         console.log('[Inside Evaluate] ' + message);
     });
-
 
     spooky.on('hello', function (greeting) {
         console.log(greeting);
@@ -366,8 +414,7 @@ start_spooky = function (order, callback){
         spooky.then(function() {
             this.exit();
         });
-
-        
+    
     })
 
     spooky.on('log', function (log) {
