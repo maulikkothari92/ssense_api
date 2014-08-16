@@ -26,10 +26,9 @@ start_spooky = function (order, callback){
                 e.details = err;
                 throw e;
             }
-
-            spooky.start('http://en.wikipedia.org/wiki/Shah_rukh_khan');
             
             var CHECKOUT_URL = 'https://www.ssense.com/checkout?isAjax=true';
+            var LOGIN_URL = 'https://www.ssense.com/account/login';
               
             var email = order["retailer_credentials"]["email"];
             var products = order["products"];
@@ -57,7 +56,57 @@ start_spooky = function (order, callback){
             var credit_card_month = order["payment_method"]["expiration_month"];
             var credit_card_year = order["payment_method"]["expiration_year"];
 
+            spooky.start(LOGIN_URL);
 
+            spooky.then(function(){
+                this.waitForSelector('input[type = email]');
+            });
+
+            spooky.then(function(){
+                this.wait(1000);
+            });
+
+            spooky.then(function(){
+                this.capture('captures/[Login] Before login.png');
+            });
+
+            spooky.then(function(){
+                this.waitForSelector('.btnLogin');
+            });
+
+            spooky.thenEvaluate(function(email, password){   
+                    $('input[type = email]')[0].value = email;
+                    $('input[type = password]')[0].value = password;
+            }, {    email: email,
+                    password: password });
+
+            spooky.then(function(){
+                this.evaluate(function(){
+                    $('.btnLogin').click();
+                }); 
+            });
+
+            spooky.then(function(){
+                this.wait(1000);
+            });
+
+            spooky.then(function(){
+                this.capture('captures/[Login] After login .png');
+            });
+
+            spooky.then(function(){
+                var invalid_credentials = this.evaluate(function(){
+                    if($('.btnLogin').length)
+                    {
+                        return true
+                    }
+                })
+
+                if(invalid_credentials)
+                {
+                    this.emit('error', 'invalid_credentials');
+                }
+            });
 
             for(i=0; i<products.length;i++)
             {
@@ -182,49 +231,6 @@ start_spooky = function (order, callback){
                 this.waitForSelector('.checkout-button');
             });
 
-            spooky.then(function(){
-                this.evaluate(function(){
-                    $('.login').click();
-                });          
-            });
-
-            spooky.then(function(){
-                this.wait(2000);
-            });
-
-            spooky.then(function(){
-                this.capture('captures/[Login] Before login.png');
-            });
-
-            spooky.then(function(){
-                this.waitForSelector('.btnLogin');
-            });
-
-            spooky.then(function(){
-                this.waitForSelector('input[type = email]');
-            });
-
-            spooky.thenEvaluate(function(email, password){   
-                    $('input[type = email]')[0].value = email;
-                    $('input[type = password]')[0].value = password;
-            }, {    email: email,
-                    password: password });
-
-
-            spooky.then(function(){
-                this.evaluate(function(){
-                    $('.btnLogin').click();
-                }); 
-            });
-
-            spooky.then(function(){
-                this.wait(1000);
-            });
-
-            spooky.then(function(){
-                this.capture('captures/[Login] After login .png');
-            });
-
             spooky.thenOpen(CHECKOUT_URL);
 
             spooky.then(function(){
@@ -292,11 +298,11 @@ start_spooky = function (order, callback){
 
             spooky.thenEvaluate(function(){
                   // Inserting credit card information.
-                console.log($('select[name="shipping_method"]').children('option').length);
-                //console.log($('select[name="shipping_state"]').val());
+                // console.log($('select[name="shipping_method"]').children('option').length);
                 console.log("Selecting shipping method");
                 $('select[name="shipping_method"]').val($('select[name="shipping_method"] option:eq(1)').val());
-                $('select[name="shipping_method"]').trigger('change'); 
+                $('select[name="shipping_method"]').trigger('change');
+                console.log($('select[name="shipping_method"]').val()); 
             });
 
             spooky.thenEvaluate(function( credit_card_name, credit_card_number, credit_card_month, credit_card_year, credit_card_cvv){
@@ -356,15 +362,21 @@ start_spooky = function (order, callback){
                 var price_on_page = this.evaluate(function() {      
                   return $('span[id="totalPrice"]').text();
                 });
+                price_on_page = parseInt(price_on_page);
+                max_price = parseInt(max_price);
                 console.log(price_on_page);
                 console.log(max_price);
-                if(max_price <= price_on_page)
+
+                if(price_on_page > max_price)
                 {
-                    this.evaluate(function() {      
-                        $('#confirm').click();
-                        console.log('Clicking the confirm button');
-                    });
-                }
+                    this.emit('error', 'max_price_exceeded');
+                }    
+
+                this.evaluate(function() {      
+                    $('#confirm').click();
+                    console.log('Clicking the CONFIRM button');
+                });
+                
             }]);
 
             spooky.then(function(){
@@ -375,6 +387,37 @@ start_spooky = function (order, callback){
                 this.capture('captures/[Checkout] After clicking the confirm button.png');
             });
 
+            spooky.then(function(){
+                var order_placed = this.evaluate(function(){
+                    if($('.orderdetails').length)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false; 
+                    }
+                });        
+
+                 if(order_placed)
+                 {
+                    var order_id = this.evaluate(function(){
+
+                        var order_id = $('.orderdetails .top0').text();
+                        order_id = order_id.replace("Order ", "");
+                        return order_id
+                    });
+
+                    this.emit('success', 'order_id'+order_id)
+                 }
+                 else   
+                 {
+                    this.emit('error', 'unknown_error')
+                 }
+
+            });
+
+                
             spooky.run();
         });
 
@@ -398,13 +441,33 @@ start_spooky = function (order, callback){
         callback(response)
     });
 
+    spooky.on('success', function(data){
+
+        var response = {
+                'success': 'true',
+                'message': 'Order has been placed',
+                'data': data
+            }
+
+        console.log('[Success]', JSON.stringify(response));
+        spooky.emit('respond_to_callback', response);
+        spooky.then(function() {
+            this.exit();
+        });
+    });    
+
+
+
     spooky.on('error', function(code, data){
         var errors = {
             'internal_error': 'The retailer you requested is experiencing outages. Please try again or contact support@zinc.io if this error persists.',
             'invalid_request': 'Validation failed on the request.',
             'invalid_quantity' : "The quantity for one of the products does not match the one available on the retailer store." ,
             'invalid_size' : "The size for one of the products does not match the one available on the retailer store.",
-            'invalid_product' : "One of the products does not match the one available on the retailer store."
+            'invalid_product' : "One of the products does not match the one available on the retailer store.",
+            'invalid_credentials' : "The username or password is invalid.",
+            'max_price_exceeded' : "The price of the product exceeded the maximum price specified in the request.",
+            'unknown_error': "Some unknown error occured after clicking the confirm order button. The order may or may not have been placed. Please check your order history."
         }
         var response = errors[code];
 
@@ -431,7 +494,7 @@ start_spooky = function (order, callback){
             this.exit();
         });
     
-    })
+    });
 
     spooky.on('log', function (log) {
         if (log.space === 'remote') {

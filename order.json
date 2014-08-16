@@ -11,7 +11,7 @@
     }  
   ],
   "shipping_method": "cheapest",
-  "max_price": "1500",
+  "max_price": "30",
   "shipping_address": {
     "first_name": "Doug",
     "last_name": "Feigelson",
