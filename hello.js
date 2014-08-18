@@ -87,7 +87,7 @@ start_spooky = function (order, callback){
             });
 
             spooky.then(function(){
-                this.wait(1000);
+                this.wait(3000);
             });
 
             spooky.then(function(){
@@ -389,7 +389,7 @@ start_spooky = function (order, callback){
 
             spooky.then(function(){
                 var order_placed = this.evaluate(function(){
-                    if($('.orderdetails').length)
+                    if($('.order-invoice').length)
                     {
                         return true;
                     }
@@ -403,8 +403,8 @@ start_spooky = function (order, callback){
                  {
                     var order_id = this.evaluate(function(){
 
-                        var order_id = $('.orderdetails .top0').text();
-                        order_id = order_id.replace("Order ", "");
+                        var order_id = $('.order-invoice').text()
+                        //order_id = order_id.replace("Order ", "");
                         return order_id
                     });
 
