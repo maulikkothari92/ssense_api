@@ -29,6 +29,7 @@ start_spooky = function (order, callback){
             
             var CHECKOUT_URL = 'https://www.ssense.com/checkout?isAjax=true';
             var LOGIN_URL = 'https://www.ssense.com/account/login';
+            var CART_URL = 'https://www.ssense.com/shopping-bag';
               
             var email = order["retailer_credentials"]["email"];
             var products = order["products"];
@@ -108,6 +109,45 @@ start_spooky = function (order, callback){
                 }
             });
 
+            spooky.then(function(){
+                var shopping_bag_count = this.evaluate(function(){
+                    return parseInt($('.miniBagCount').text().charAt(1));
+                    console.log('Shopping Bag has '+ parseInt($('.miniBagCount').text().charAt(1))+' items');
+                })
+
+                if(shopping_bag_count > 0)
+                {
+                    clear_cart(shopping_bag_count); 
+                }
+            })
+
+
+            function clear_cart (shopping_bag_count)
+            {
+                spooky.thenOpen(CART_URL);
+
+                spooky.then(function(){
+                        this.capture('Before_cart_clear.png');   
+                    });
+
+                for(i=0; i<shopping_bag_count, i++)
+                {
+                    spooky.then(function(){
+                        this.evaluate(function(){
+                            $('.fa-small-close').click()
+                        });
+                    }); 
+
+                    spooky.then(function(){
+                        this.wait(2000);
+                    }); 
+
+                    spooky.then(function(){
+                        this.capture('After_cart_clear.png');   
+                    });
+                }
+            }
+
             for(i=0; i<products.length;i++)
             {
                 product = products[i];
@@ -132,6 +172,7 @@ start_spooky = function (order, callback){
                     add_single_product_cart(size, category, product_id);
                 }
             }
+
 
             function add_single_product_cart( size, category, product_id )
             {
