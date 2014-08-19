@@ -127,10 +127,10 @@ start_spooky = function (order, callback){
                 spooky.thenOpen(CART_URL);
 
                 spooky.then(function(){
-                        this.capture('Before_cart_clear.png');   
+                        this.capture('captures/[Clear Cart] Before_cart_clear.png');   
                     });
 
-                for(i=0; i<shopping_bag_count, i++)
+                for(i=0; i<shopping_bag_count; i++)
                 {
                     spooky.then(function(){
                         this.evaluate(function(){
@@ -143,7 +143,7 @@ start_spooky = function (order, callback){
                     }); 
 
                     spooky.then(function(){
-                        this.capture('After_cart_clear.png');   
+                        this.capture('captures/[Clear Cart] After_cart_clear.png');   
                     });
                 }
             }
