@@ -22,11 +22,12 @@ start_spooky = function (order, callback){
                 e.details = err;
                 throw e;
             }
-            
+            // Initializing the URL variables
             var CHECKOUT_URL = 'https://www.ssense.com/checkout?isAjax=true';
             var LOGIN_URL = 'https://www.ssense.com/account/login';
             var CART_URL = 'https://www.ssense.com/shopping-bag';
               
+            // Reading from input 
             var email = order["retailer_credentials"]["email"];
             var products = order["products"];
             var password = order["retailer_credentials"]["password"];
@@ -62,7 +63,7 @@ start_spooky = function (order, callback){
             spooky.then(function(){
                 this.wait(1000);
             });
-
+            // Taking Snapshots for debugging
             spooky.then(function(){
                 this.capture('captures/[Login] Before login.png');
             });
@@ -91,7 +92,9 @@ start_spooky = function (order, callback){
             spooky.then(function(){
                 this.capture('captures/[Login] After login .png');
             });
-
+            //  If Login failed, the login button still shows up.
+            //  Using this method because "Invalid Credentials" pops up only for a second 
+            //  and it is difficult to detect. 
             spooky.then(function(){
                 var invalid_credentials = this.evaluate(function(){
                     if($('.btnLogin').length)
@@ -109,7 +112,8 @@ start_spooky = function (order, callback){
                     this.emit('message', "Logged in.")
                 }
             });
-
+            //  Checking if there are items already in the shopping bag.
+            //  If yes then, calling the clear cart function 
             spooky.then(function(){
                 var shopping_bag_count = this.evaluate(function(){
                     return  parseInt($('.miniBagCount').text().charAt(1));
@@ -122,6 +126,7 @@ start_spooky = function (order, callback){
 
                 if(shopping_bag_count > 0)
                 {
+                    this.emit('message', 'Calling clear cart function.');
                     clear_cart(shopping_bag_count); 
                 }
             });
@@ -135,7 +140,8 @@ start_spooky = function (order, callback){
                         this.capture('captures/[Clear Cart] Before_cart_clear.png');   
                     });
 
-                for(i=0; i<shopping_bag_count; i++)
+                //  Runs one time more than the shopping bag count just in case.. 
+                for(i=0; i<=shopping_bag_count; i++)
                 {
                     spooky.then(function(){
                         this.emit('message', "Clearing one product from cart..")
@@ -153,6 +159,9 @@ start_spooky = function (order, callback){
                     });
                 }
             }
+
+            // Adding the products to the shopping bag. 
+            // Supports multiple products and multiple quantities of each product. 
 
             for(i=0; i<products.length;i++)
             {
@@ -179,7 +188,7 @@ start_spooky = function (order, callback){
                 }
             }
 
-
+            //  Add a single product to the cart.
             function add_single_product_cart( size, category, product_id )
             {
                 spooky.thenOpen('http://ssense.com/'+category+'/product/rs/rs/'+product_id);
@@ -338,7 +347,7 @@ start_spooky = function (order, callback){
             }, { shipping_city: shipping_city, shipping_phone: shipping_phone }); 
 
             spooky.then(function(){
-               this.wait(1000);
+               this.wait(2000);
             });
 
             spooky.then(function(){
@@ -347,7 +356,6 @@ start_spooky = function (order, callback){
 
             spooky.thenEvaluate(function(){
                   // Inserting credit card information.
-                // console.log($('select[name="shipping_method"]').children('option').length);
                 //console.log("Selecting shipping method");
                 $('select[name="shipping_method"]').val($('select[name="shipping_method"] option:eq(1)').val());
                 $('select[name="shipping_method"]').trigger('change');
@@ -454,6 +462,7 @@ start_spooky = function (order, callback){
                     this.emit('error', 'invalid_details');
                 }    
             });
+
 
             spooky.then(function(){
                 this.capture('captures/[Checkout] After clicking the confirm button.png');
