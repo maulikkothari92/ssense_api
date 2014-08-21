@@ -278,7 +278,7 @@ start_spooky = function (order, callback){
             });
 
             spooky.then(function(){
-                this.wait(1000);
+                this.wait(2000);
             });
 
             spooky.then(function(){
@@ -355,8 +355,6 @@ start_spooky = function (order, callback){
             });
 
             spooky.thenEvaluate(function(){
-                  // Inserting credit card information.
-                //console.log("Selecting shipping method");
                 $('select[name="shipping_method"]').val($('select[name="shipping_method"] option:eq(1)').val());
                 $('select[name="shipping_method"]').trigger('change');
                 //console.log($('select[name="shipping_method"]').val()); 
@@ -399,6 +397,13 @@ start_spooky = function (order, callback){
             }, {billing_firstname:billing_firstname, 
                 billing_lastname: billing_lastname, 
                 billing_address: billing_address});
+
+            spooky.thenEvaluate(function(){
+                  // Inserting shipping method information.       
+                $('select[name="shipping_method"]').val($('select[name="shipping_method"] option:eq(1)').val());
+                $('select[name="shipping_method"]').trigger('change');
+                //console.log('Shipping method value: '+$('select[name="shipping_method"]').val()); 
+            });
 
 
             spooky.thenEvaluate(function(billing_postalcode, billing_country, billing_state, billing_city, billing_phone){
@@ -488,7 +493,15 @@ start_spooky = function (order, callback){
                         return order_id
                     });
 
-                    this.emit('success', 'Order Id: '+order_id)
+                    var order_total = this.evaluate(function(){
+
+                        var order_total = $('.order-total').text().replace("$", "").trim();
+                        order_total = parseFloat(order_total);
+                        order_total *= 100;
+                        return order_total
+                    });
+
+                    this.emit('success', order_id, order_total, {});
                  }
                  else   
                  {
@@ -521,11 +534,13 @@ start_spooky = function (order, callback){
         callback(response)
     });
 
-    spooky.on('success', function(data){
+    spooky.on('success', function(order_id, order_total, data){
 
         var response = {
                 'success': 'true',
                 'message': 'Order has been placed',
+                'order_id': order_id,
+                'order_total': order_total,
                 'data': data
             }
 

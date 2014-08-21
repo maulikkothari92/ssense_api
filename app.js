@@ -17,7 +17,7 @@ var router = express.Router();              // get an instance of the express Ro
 
 router.get('/order', function(req, res) {
     hello.start_spooky(order, function(response){
-    	res.json(response);   
+    	res.send(response);
     });
 });
 
