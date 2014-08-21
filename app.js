@@ -14,12 +14,6 @@ var port = process.env.PORT || 8080;
 
 var router = express.Router();              // get an instance of the express Router
 
-// test route to make sure everything is working (accessed at GET http://localhost:8080/api)
-// router.get('/order', function(req, res) {
-//     hello.start_spooky(order);
-//     res.json({ message: 'Hooray! Welcome to SSENSE api!' });   
-// });
-
 
 router.get('/order', function(req, res) {
     hello.start_spooky(order, function(response){

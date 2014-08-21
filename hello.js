@@ -5,11 +5,7 @@ start_spooky = function (order, callback){
     } catch (e) {
         var Spooky = require('../lib/spooky');
     }
-
-    // create function taking params and callback
-    // at the end, call callback(results)
-
-
+    
     var spooky = new Spooky({
             child: {
                 transport: 'http'
@@ -73,6 +69,7 @@ start_spooky = function (order, callback){
 
             spooky.then(function(){
                 this.waitForSelector('.btnLogin');
+                this.emit('message', "Trying to log in.")
             });
 
             spooky.thenEvaluate(function(email, password){   
@@ -101,25 +98,33 @@ start_spooky = function (order, callback){
                     {
                         return true
                     }
-                })
+                });
 
                 if(invalid_credentials)
                 {
                     this.emit('error', 'invalid_credentials');
                 }
+                else
+                {
+                    this.emit('message', "Logged in.")
+                }
             });
 
             spooky.then(function(){
                 var shopping_bag_count = this.evaluate(function(){
-                    return parseInt($('.miniBagCount').text().charAt(1));
-                    console.log('Shopping Bag has '+ parseInt($('.miniBagCount').text().charAt(1))+' items');
-                })
+                    return  parseInt($('.miniBagCount').text().charAt(1));
+                });
+
+                shopping_bag_count = parseInt(shopping_bag_count);
+
+                this.emit('message', "Checking if Shopping Cart has items...");
+                this.emit('message', 'Shopping Bag has '+shopping_bag_count+' items');
 
                 if(shopping_bag_count > 0)
                 {
                     clear_cart(shopping_bag_count); 
                 }
-            })
+            });
 
 
             function clear_cart (shopping_bag_count)
@@ -133,6 +138,7 @@ start_spooky = function (order, callback){
                 for(i=0; i<shopping_bag_count; i++)
                 {
                     spooky.then(function(){
+                        this.emit('message', "Clearing one product from cart..")
                         this.evaluate(function(){
                             $('.fa-small-close').click()
                         });
@@ -230,8 +236,9 @@ start_spooky = function (order, callback){
                 }
 
                 spooky.then(function(){
+                    this.emit('message',"Adding one product to cart.");  
                     this.evaluate(function() {      
-                        $('.btnAddToBag').click();  
+                        $('.btnAddToBag').click();
                     });
                 });
 
@@ -254,9 +261,10 @@ start_spooky = function (order, callback){
             });
 
             spooky.then(function(){
-                this.emit('hello', 'Clicking the checkout button on the products display page.');
+                this.emit('message','Clicking the checkout button on the products display page.');
+        
                 this.evaluate(function() {
-                    $('.btn-checkout').click()
+                    $('.btn-checkout').click();
                 });
             });
 
@@ -292,13 +300,14 @@ start_spooky = function (order, callback){
                 this.waitForSelector('input[name="shipping_address"]');
             });
 
+            spooky.then(function(){
+                this.emit('message', "Checkout page loaded");
+                this.emit('message', "Entering shipping details.");
+            });
+
             spooky.thenEvaluate(function( shipping_firstname, shipping_lastname, shipping_address){
-                console.log("Checkout page loaded");
-                console.log("Entering shipping last name.");
                 $('input[name="shipping_lastname"]').val(shipping_lastname);
-                console.log("Entering shipping first name.");
                 $('input[name="shipping_firstname"]').val(shipping_firstname);
-                console.log("Entering shipping address.");
                 $('input[name="shipping_address"]').val(shipping_address);
             }, { shipping_firstname: shipping_firstname,
                shipping_lastname: shipping_lastname,
@@ -311,22 +320,17 @@ start_spooky = function (order, callback){
 
             spooky.thenEvaluate(function( shipping_country, shipping_state, shipping_postalcode){
          
-                console.log("Entering shipping country");
                 $('select[name="shipping_country"]').val(shipping_country);
                 $('select[name="shipping_country"]').trigger('change');
                 $('select[name="shipping_state"]').val(shipping_state);
                 $('select[name="shipping_state"]').trigger('change');
-                
-                console.log("Entering shipping zip-code");
                 $('input[name="shipping_postalcode"]').val(shipping_postalcode);
 
             }, { shipping_country: shipping_country, shipping_state: shipping_state, shipping_postalcode: shipping_postalcode });
 
             spooky.thenEvaluate(function( shipping_city, shipping_phone){
          
-                console.log("Entering shipping city");
                 $('input[name="shipping_city"]').val(shipping_city);
-                console.log("Entering phone number");
                 $('input[name="shipping_phone"]').val(shipping_phone);
                 $('select[name="shipping_state"]').trigger('change');
                 $('select[name="shipping_method"]').trigger('change');
@@ -337,17 +341,26 @@ start_spooky = function (order, callback){
                this.wait(1000);
             });
 
+            spooky.then(function(){
+                this.emit('message', "Selecting shipping method");
+            });
+
             spooky.thenEvaluate(function(){
                   // Inserting credit card information.
                 // console.log($('select[name="shipping_method"]').children('option').length);
-                console.log("Selecting shipping method");
+                //console.log("Selecting shipping method");
                 $('select[name="shipping_method"]').val($('select[name="shipping_method"] option:eq(1)').val());
                 $('select[name="shipping_method"]').trigger('change');
-                console.log($('select[name="shipping_method"]').val()); 
+                //console.log($('select[name="shipping_method"]').val()); 
+            });
+
+            spooky.then(function(){
+                this.emit('message', "Entering credit card details.");
             });
 
             spooky.thenEvaluate(function( credit_card_name, credit_card_number, credit_card_month, credit_card_year, credit_card_cvv){
                   // Inserting credit card information.
+                //console.log("Entering credit card details.");  
                 $('input[name="creditcardHolderName"]').val(credit_card_name);
                 $('input[name="creditcardNumber"]').val(credit_card_number);
                 $('select[name="creditCardMonth"]').val(credit_card_month);
@@ -359,8 +372,13 @@ start_spooky = function (order, callback){
                  credit_card_year: credit_card_year, 
                  credit_card_cvv: credit_card_cvv});
 
+            spooky.then(function(){
+                this.emit('message', "Entering billing details.");
+            });
+
             spooky.thenEvaluate(function(billing_firstname, billing_lastname, billing_address){
                 // Inserting credit card information.
+                //console.log("Entering billing details.");
                 $('input[name="billing_firstname"]').val(billing_firstname);
                 $('input[name="billing_lastname"]').val(billing_lastname);
                 $('input[name="billing_address"]').val(billing_address);
@@ -405,23 +423,36 @@ start_spooky = function (order, callback){
                 });
                 price_on_page = parseInt(price_on_page);
                 max_price = parseInt(max_price);
-                console.log(price_on_page);
-                console.log(max_price);
+                //console.log(price_on_page);
+                //console.log(max_price);
 
                 if(price_on_page > max_price)
                 {
                     this.emit('error', 'max_price_exceeded');
-                }    
+                }
+
+                this.emit('message', "Trying to click the CONFIRM button");   
 
                 this.evaluate(function() {      
                     $('#confirm').click();
-                    console.log('Clicking the CONFIRM button');
+                    //console.log('Clicking the CONFIRM button');
                 });
                 
             }]);
 
             spooky.then(function(){
                 this.wait(2000);
+            });
+
+            spooky.then(function(){
+                var invalid_details = this.evaluate(function(){
+                    return $('#confirm').length;
+                });
+
+                if (invalid_details === 1)
+                {
+                    this.emit('error', 'invalid_details');
+                }    
             });
 
             spooky.then(function(){
@@ -445,11 +476,10 @@ start_spooky = function (order, callback){
                     var order_id = this.evaluate(function(){
 
                         var order_id = $('.order-invoice').text()
-                        //order_id = order_id.replace("Order ", "");
                         return order_id
                     });
 
-                    this.emit('success', 'order_id'+order_id)
+                    this.emit('success', 'Order Id: '+order_id)
                  }
                  else   
                  {
@@ -466,15 +496,15 @@ start_spooky = function (order, callback){
     // Uncomment this block to see all of the things Casper has to say.
     // There are a lot.
     // He has opinions.
-    spooky.on('console', function (line) {
-        console.log(line);
-    });
+    // spooky.on('console', function (line) {
+    //     console.log(line);
+    // });
 
     spooky.on('remote.message', function(message) {
         console.log('[Inside Evaluate] ' + message);
     });
 
-    spooky.on('hello', function (greeting) {
+    spooky.on('message', function (greeting) {
         console.log(greeting);
     });
 
@@ -504,11 +534,12 @@ start_spooky = function (order, callback){
             'internal_error': 'The retailer you requested is experiencing outages. Please try again or contact support@zinc.io if this error persists.',
             'invalid_request': 'Validation failed on the request.',
             'invalid_quantity' : "The quantity for one of the products does not match the one available on the retailer store." ,
-            'invalid_size' : "The size for one of the products does not match the one available on the retailer store.",
+            'invalid_size' : "The size for one of the products does not match the one available on the retailer store. The size may be sold out or invalid.",
             'invalid_product' : "One of the products does not match the one available on the retailer store.",
             'invalid_credentials' : "The username or password is invalid.",
             'max_price_exceeded' : "The price of the product exceeded the maximum price specified in the request.",
-            'unknown_error': "Some unknown error occured after clicking the confirm order button. The order may or may not have been placed. Please check your order history."
+            'unknown_error': "Some unknown error occured after clicking the confirm order button. The order may or may not have been placed. Please check your order history.",
+            'invalid_details' : "Either shipping or billing or credit card details are invalid"
         }
         var response = errors[code];
 
