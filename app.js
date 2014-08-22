@@ -3,7 +3,7 @@
 var express    = require('express');        // call express
 var app        = express();                 // define our app using express
 var bodyParser = require('body-parser');
-var hello      = require('./hello');
+var ssense_order      = require('./ssense_order');
 var order      = require('./order')
 
 // configure app to use bodyParser()
@@ -16,7 +16,7 @@ var router = express.Router();              // get an instance of the express Ro
 
 
 router.get('/order', function(req, res) {
-    hello.start_spooky(order, function(response){
+    ssense_order.start_spooky(order, function(response){
     	res.send(response);
     });
 });
