@@ -22,12 +22,12 @@ start_spooky = function (order, callback){
                 e.details = err;
                 throw e;
             }
-            // Initializing the URL variables
+            // Base URLs
             var CHECKOUT_URL = 'https://www.ssense.com/checkout?isAjax=true';
             var LOGIN_URL = 'https://www.ssense.com/account/login';
             var CART_URL = 'https://www.ssense.com/shopping-bag';
               
-            // Reading from input 
+            // Getting input 
             var email = order["retailer_credentials"]["email"];
             var products = order["products"];
             var password = order["retailer_credentials"]["password"];
@@ -63,7 +63,8 @@ start_spooky = function (order, callback){
             spooky.then(function(){
                 this.wait(1000);
             });
-            // Taking Snapshots for debugging
+
+            // screenshots for debugging
             spooky.then(function(){
                 this.capture('captures/[Login] Before login.png');
             });
@@ -140,7 +141,7 @@ start_spooky = function (order, callback){
                         this.capture('captures/[Clear Cart] Before_cart_clear.png');   
                     });
 
-                //  Runs one time more than the shopping bag count just in case.. 
+                //  Extra iteration of loop because of faulty JS sometimes
                 for(i=0; i<=shopping_bag_count; i++)
                 {
                     spooky.then(function(){
@@ -227,7 +228,6 @@ start_spooky = function (order, callback){
                         }, function(){
                         var new_size = this.evaluate(function(size){
                             var size_on_page = $('option[value*='+ size +']').val();
-                            //console.log('SIZE ON PAGE: ' + size_on_page)
                             return size_on_page;
                         }, { size: size});
 
@@ -235,8 +235,6 @@ start_spooky = function (order, callback){
                         {
                             this.emit('error', 'invalid_size');
                         }
-
-                        // console.log('hello', "New Size: " +new_size);
 
                         this.evaluate(function(new_size){   
                           jQuery('select[id="size"]').val(new_size);     
@@ -436,8 +434,6 @@ start_spooky = function (order, callback){
                 });
                 price_on_page = parseInt(price_on_page);
                 max_price = parseInt(max_price);
-                //console.log(price_on_page);
-                //console.log(max_price);
 
                 if(price_on_page > max_price)
                 {
@@ -448,7 +444,7 @@ start_spooky = function (order, callback){
 
                 this.evaluate(function() {      
                     $('#confirm').click();
-                    //console.log('Clicking the CONFIRM button');
+                    console.log('Clicking the CONFIRM button');
                 });
                 
             }]);
@@ -513,14 +509,6 @@ start_spooky = function (order, callback){
                 
             spooky.run();
         });
-
-
-    // Uncomment this block to see all of the things Casper has to say.
-    // There are a lot.
-    // He has opinions.
-    // spooky.on('console', function (line) {
-    //     console.log(line);
-    // });
 
     spooky.on('remote.message', function(message) {
         console.log('[Inside Evaluate] ' + message);
